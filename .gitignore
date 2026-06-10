@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.venv/
+venv/
+
+# Local environment
+.env
+.env.*
+kaggle.json
+
+# Kaggle competition data and generated artifacts
+data/
+models/
+submissions/
+outputs/
+*.zip
+*.parquet
+*.pkl
+*.joblib
+
+# Notebooks
+.ipynb_checkpoints/
+
+# System files
+.DS_Store
