@@ -18,6 +18,7 @@ data/
 models/
 submissions/
 outputs/
+work/
 *.zip
 *.parquet
 *.pkl
