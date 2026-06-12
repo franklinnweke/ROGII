@@ -7,20 +7,58 @@ import numpy as np
 import pandas as pd
 
 from rogii_geology.baseline import fill_tvt_from_input
+from rogii_geology.correlation import blend_interpolation_and_correlation, estimate_tvt_from_typewell_gr
 from rogii_geology.io import discover_wells, read_horizontal
 from rogii_geology.validation import mask_contiguous_zone
 
 
-def evaluate_well(path: Path, start_fraction: float, zone_fraction: float) -> dict[str, float | int | str]:
+def evaluate_well(
+    path: Path,
+    typewell_path: Path | None,
+    start_fraction: float,
+    zone_fraction: float,
+    use_correlation: bool,
+    correlation_weight: float,
+    correlation_step: int,
+    candidate_step: int,
+) -> dict[str, float | int | str]:
     df = read_horizontal(path)
     masked, target = mask_contiguous_zone(df, start_fraction=start_fraction, zone_fraction=zone_fraction)
-    prediction = fill_tvt_from_input(masked).loc[target.index]
+    interpolation = fill_tvt_from_input(masked).loc[target.index]
+    prediction = interpolation
+    model = "interpolation"
+
+    if use_correlation and typewell_path is not None:
+        typewell = pd.read_csv(typewell_path)
+        target_rows = target.index.to_numpy()
+        step = max(1, int(correlation_step))
+        anchor_rows = np.unique(np.r_[target_rows[::step], target_rows[-1]])
+        anchor_correlation = estimate_tvt_from_typewell_gr(
+            masked,
+            typewell,
+            anchor_rows,
+            candidate_step=candidate_step,
+        )
+        correlation = (
+            anchor_correlation.reindex(target.index.union(anchor_correlation.index))
+            .sort_index()
+            .interpolate(limit_direction="both")
+            .reindex(target.index)
+        )
+        prediction = blend_interpolation_and_correlation(
+            interpolation,
+            correlation,
+            correlation_weight=correlation_weight,
+        )
+        model = "interpolation_typewell_gr_blend"
+
     residual = target.to_numpy(dtype=float) - prediction.to_numpy(dtype=float)
     rmse = float(np.sqrt(np.mean(residual**2)))
     mae = float(np.mean(np.abs(residual)))
 
     return {
         "well_id": path.name.replace("__horizontal_well.csv", ""),
+        "model": model,
         "rows": len(df),
         "masked_rows": len(target),
         "rmse": rmse,
@@ -36,9 +74,28 @@ def evaluate_train(
     data_dir: Path,
     start_fraction: float,
     zone_fraction: float,
+    use_correlation: bool,
+    correlation_weight: float,
+    correlation_step: int,
+    candidate_step: int,
+    max_wells: int | None,
 ) -> pd.DataFrame:
     wells = discover_wells(Path(data_dir) / "train")
-    rows = [evaluate_well(well.horizontal, start_fraction, zone_fraction) for well in wells]
+    if max_wells is not None:
+        wells = wells[:max_wells]
+    rows = [
+        evaluate_well(
+            well.horizontal,
+            well.typewell,
+            start_fraction,
+            zone_fraction,
+            use_correlation,
+            correlation_weight,
+            correlation_step,
+            candidate_step,
+        )
+        for well in wells
+    ]
     return pd.DataFrame(rows).sort_values("rmse", ascending=False).reset_index(drop=True)
 
 
@@ -49,7 +106,7 @@ def write_markdown(results: pd.DataFrame, output_path: Path) -> None:
     lines = [
         "# Baseline Validation",
         "",
-        "Validation masks a contiguous interval inside each training well, then predicts that interval from `TVT_input` using the current interpolation/extrapolation baseline.",
+        "Validation masks a contiguous interval inside each training well, then predicts that interval from inference-available inputs.",
         "",
         f"- Wells evaluated: {len(results)}",
         f"- Masked rows: {int(results['masked_rows'].sum())}",
@@ -89,11 +146,25 @@ def main() -> None:
     parser.add_argument("--data-dir", type=Path, default=Path("data/raw"))
     parser.add_argument("--start-fraction", type=float, default=0.65)
     parser.add_argument("--zone-fraction", type=float, default=0.20)
+    parser.add_argument("--use-correlation", action="store_true")
+    parser.add_argument("--correlation-weight", type=float, default=0.35)
+    parser.add_argument("--correlation-step", type=int, default=25)
+    parser.add_argument("--candidate-step", type=int, default=5)
+    parser.add_argument("--max-wells", type=int, default=None)
     parser.add_argument("--csv-output", type=Path, default=Path("work/baseline_validation.csv"))
     parser.add_argument("--markdown-output", type=Path, default=Path("outputs/baseline_validation.md"))
     args = parser.parse_args()
 
-    results = evaluate_train(args.data_dir, args.start_fraction, args.zone_fraction)
+    results = evaluate_train(
+        args.data_dir,
+        args.start_fraction,
+        args.zone_fraction,
+        args.use_correlation,
+        args.correlation_weight,
+        args.correlation_step,
+        args.candidate_step,
+        args.max_wells,
+    )
     args.csv_output.parent.mkdir(parents=True, exist_ok=True)
     results.to_csv(args.csv_output, index=False)
     write_markdown(results, args.markdown_output)
