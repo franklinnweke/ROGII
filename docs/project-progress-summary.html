@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ROGII Wellbore Geology Prediction - Project Progress Summary</title>
+</head>
+<body style="margin:0;background:#f5f7f8;color:#172026;font-family:Arial,Helvetica,sans-serif;line-height:1.55;">
+  <main style="max-width:980px;margin:0 auto;padding:40px 22px 56px;">
+    <section style="background:#ffffff;border:1px solid #d9e0e4;border-radius:8px;padding:30px;box-shadow:0 8px 24px rgba(20,35,45,0.06);">
+      <p style="margin:0 0 8px;color:#60717c;font-size:14px;text-transform:uppercase;letter-spacing:0.06em;">Project Summary</p>
+      <h1 style="margin:0 0 14px;font-size:32px;line-height:1.15;color:#10202b;">ROGII Wellbore Geology Prediction</h1>
+      <p style="margin:0;color:#334650;font-size:17px;">
+        This project is Franklin Nweke's Kaggle competition work for predicting true vertical thickness
+        in horizontal wellbore geology data. The work is being framed as a serious applied ML and petroleum
+        engineering portfolio project, not as an overclaimed result.
+      </p>
+    </section>
+
+    <section style="margin-top:22px;background:#ffffff;border:1px solid #d9e0e4;border-radius:8px;padding:26px;">
+      <h2 style="margin:0 0 12px;font-size:22px;color:#10202b;">What We Have Done So Far</h2>
+      <ol style="margin:0;padding-left:22px;">
+        <li style="margin-bottom:12px;">
+          <strong>Created a dedicated project repository.</strong>
+          The work is under its own standalone GitHub repo, <code style="background:#edf2f4;padding:2px 5px;border-radius:4px;">franklinnweke/ROGII</code>,
+          separate from other projects.
+        </li>
+        <li style="margin-bottom:12px;">
+          <strong>Downloaded and organized the Kaggle competition data locally.</strong>
+          Raw Kaggle data lives in <code style="background:#edf2f4;padding:2px 5px;border-radius:4px;">data/raw/</code>, while generated outputs,
+          submissions, and working files are ignored by Git so private/large competition artifacts do not get pushed.
+        </li>
+        <li style="margin-bottom:12px;">
+          <strong>Built the first project structure.</strong>
+          The repo now has Python source code, scripts, tests, docs, notebooks, and a clean ignore policy.
+        </li>
+        <li style="margin-bottom:12px;">
+          <strong>Added data audit and baseline tooling.</strong>
+          Earlier commits added scripts to inspect the dataset, validate baseline behavior, and generate a Kaggle submission file.
+        </li>
+        <li style="margin-bottom:12px;">
+          <strong>Researched the competition direction.</strong>
+          We reviewed Kaggle notebooks and domain references. The key finding is that this problem is not best approached first
+          as a generic tabular regression task. The public evidence points toward continuity baselines, gamma-ray/typewell correlation,
+          and guarded blends.
+        </li>
+        <li>
+          <strong>Protected authorship hygiene.</strong>
+          The repo content was scanned for unwanted authorship labels, and none were found in the pushed project files.
+        </li>
+      </ol>
+    </section>
+
+    <section style="margin-top:22px;background:#ffffff;border:1px solid #d9e0e4;border-radius:8px;padding:26px;">
+      <h2 style="margin:0 0 12px;font-size:22px;color:#10202b;">What The Last Push Achieved</h2>
+      <p style="margin:0 0 14px;">
+        The latest GitHub update changed the project direction from an interpolation-first baseline to a stronger,
+        competition-aligned <strong>flat-tail baseline</strong>.
+      </p>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;">
+        <div style="border:1px solid #d9e0e4;border-radius:8px;padding:16px;background:#f9fbfc;">
+          <h3 style="margin:0 0 8px;font-size:17px;color:#10202b;">Default Baseline Corrected</h3>
+          <p style="margin:0;">
+            Prediction now carries the last known <code style="background:#edf2f4;padding:2px 5px;border-radius:4px;">TVT_input</code>
+            value through the hidden tail, instead of extrapolating an increasing/decreasing line.
+          </p>
+        </div>
+        <div style="border:1px solid #d9e0e4;border-radius:8px;padding:16px;background:#f9fbfc;">
+          <h3 style="margin:0 0 8px;font-size:17px;color:#10202b;">Submission Script Updated</h3>
+          <p style="margin:0;">
+            <code style="background:#edf2f4;padding:2px 5px;border-radius:4px;">scripts/make_baseline_submission.py</code>
+            now supports <code style="background:#edf2f4;padding:2px 5px;border-radius:4px;">--strategy flat</code>
+            and uses it by default.
+          </p>
+        </div>
+        <div style="border:1px solid #d9e0e4;border-radius:8px;padding:16px;background:#f9fbfc;">
+          <h3 style="margin:0 0 8px;font-size:17px;color:#10202b;">Validation Made More Honest</h3>
+          <p style="margin:0;">
+            Validation now targets the original missing <code style="background:#edf2f4;padding:2px 5px;border-radius:4px;">TVT_input</code>
+            tails in training wells by default, matching the actual Kaggle submission setup more closely.
+          </p>
+        </div>
+        <div style="border:1px solid #d9e0e4;border-radius:8px;padding:16px;background:#f9fbfc;">
+          <h3 style="margin:0 0 8px;font-size:17px;color:#10202b;">Kaggle Notebook Draft Added</h3>
+          <p style="margin:0;">
+            Added <code style="background:#edf2f4;padding:2px 5px;border-radius:4px;">notebooks/rogii_flat_tail_baseline.py</code>,
+            a simple Kaggle-ready script that writes <code style="background:#edf2f4;padding:2px 5px;border-radius:4px;">submission.csv</code>.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section style="margin-top:22px;background:#ffffff;border:1px solid #d9e0e4;border-radius:8px;padding:26px;">
+      <h2 style="margin:0 0 12px;font-size:22px;color:#10202b;">Files Added Or Changed In The Last Push</h2>
+      <table style="width:100%;border-collapse:collapse;font-size:15px;">
+        <thead>
+          <tr>
+            <th style="text-align:left;border-bottom:2px solid #ccd6dc;padding:10px 8px;">File</th>
+            <th style="text-align:left;border-bottom:2px solid #ccd6dc;padding:10px 8px;">Purpose</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="border-bottom:1px solid #e2e8ec;padding:10px 8px;"><code>src/rogii_geology/baseline.py</code></td>
+            <td style="border-bottom:1px solid #e2e8ec;padding:10px 8px;">Added flat-tail TVT fill strategy and made it the practical default.</td>
+          </tr>
+          <tr>
+            <td style="border-bottom:1px solid #e2e8ec;padding:10px 8px;"><code>src/rogii_geology/submission.py</code></td>
+            <td style="border-bottom:1px solid #e2e8ec;padding:10px 8px;">Submission generation now accepts a strategy argument.</td>
+          </tr>
+          <tr>
+            <td style="border-bottom:1px solid #e2e8ec;padding:10px 8px;"><code>scripts/evaluate_baseline.py</code></td>
+            <td style="border-bottom:1px solid #e2e8ec;padding:10px 8px;">Validation now supports original evaluation-tail gaps and synthetic masks.</td>
+          </tr>
+          <tr>
+            <td style="border-bottom:1px solid #e2e8ec;padding:10px 8px;"><code>scripts/make_baseline_submission.py</code></td>
+            <td style="border-bottom:1px solid #e2e8ec;padding:10px 8px;">CLI can generate flat or interpolation submissions.</td>
+          </tr>
+          <tr>
+            <td style="border-bottom:1px solid #e2e8ec;padding:10px 8px;"><code>tests/test_baseline.py</code></td>
+            <td style="border-bottom:1px solid #e2e8ec;padding:10px 8px;">Tests confirm flat-tail behavior and default strategy.</td>
+          </tr>
+          <tr>
+            <td style="border-bottom:1px solid #e2e8ec;padding:10px 8px;"><code>notebooks/rogii_flat_tail_baseline.py</code></td>
+            <td style="border-bottom:1px solid #e2e8ec;padding:10px 8px;">Kaggle-ready submission script.</td>
+          </tr>
+          <tr>
+            <td style="border-bottom:1px solid #e2e8ec;padding:10px 8px;"><code>docs/research-notes.md</code></td>
+            <td style="border-bottom:1px solid #e2e8ec;padding:10px 8px;">Summarizes Kaggle observations and petroleum/geosteering context.</td>
+          </tr>
+          <tr>
+            <td style="padding:10px 8px;"><code>docs/modeling-notes.md</code></td>
+            <td style="padding:10px 8px;">Documents why flat-tail baseline is now preferred over the earlier interpolation baseline.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section style="margin-top:22px;background:#ffffff;border:1px solid #d9e0e4;border-radius:8px;padding:26px;">
+      <h2 style="margin:0 0 12px;font-size:22px;color:#10202b;">Verification Completed</h2>
+      <ul style="margin:0;padding-left:22px;">
+        <li>Focused baseline tests passed: <strong>5 tests OK</strong>.</li>
+        <li>Generated local submission file had <strong>14,152 lines</strong>, matching Kaggle's sample submission count including header.</li>
+        <li>Generated files and raw data remain ignored by Git.</li>
+        <li>No unwanted authorship labels were found in the project files scanned before publishing.</li>
+      </ul>
+    </section>
+
+    <section style="margin-top:22px;background:#ffffff;border:1px solid #d9e0e4;border-radius:8px;padding:26px;">
+      <h2 style="margin:0 0 12px;font-size:22px;color:#10202b;">Important Caveat</h2>
+      <p style="margin:0;">
+        The GitHub update was completed through the GitHub connector because local <code style="background:#edf2f4;padding:2px 5px;border-radius:4px;">git push</code>
+        and <code style="background:#edf2f4;padding:2px 5px;border-radius:4px;">git fetch</code> were hanging in the HTTPS transport path.
+        GitHub <code style="background:#edf2f4;padding:2px 5px;border-radius:4px;">main</code> has the pushed content, but the local Git history should be realigned later once the local Git transport behaves normally.
+      </p>
+    </section>
+
+    <section style="margin-top:22px;background:#ffffff;border:1px solid #d9e0e4;border-radius:8px;padding:26px;">
+      <h2 style="margin:0 0 12px;font-size:22px;color:#10202b;">Recommended Next Steps</h2>
+      <ol style="margin:0;padding-left:22px;">
+        <li style="margin-bottom:10px;">Run the flat-tail notebook on Kaggle and make the first honest submission.</li>
+        <li style="margin-bottom:10px;">Record the public score without overclaiming it as final model performance.</li>
+        <li style="margin-bottom:10px;">Build a guarded gamma-ray/typewell correlation experiment as the second pipeline.</li>
+        <li style="margin-bottom:10px;">Compare the guarded correlation result against the flat-tail baseline.</li>
+        <li>Turn the process into portfolio proof: Kaggle notebook, GitHub repo, technical write-up, and LinkedIn summary.</li>
+      </ol>
+    </section>
+  </main>
+</body>
+</html>
