@@ -6,7 +6,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from rogii_geology.baseline import fill_tvt_from_input
+from rogii_geology.baseline import fill_tvt
 from rogii_geology.correlation import blend_interpolation_and_correlation, estimate_tvt_from_typewell_gr
 from rogii_geology.io import discover_wells, read_horizontal
 from rogii_geology.validation import mask_contiguous_zone
@@ -21,12 +21,28 @@ def evaluate_well(
     correlation_weight: float,
     correlation_step: int,
     candidate_step: int,
+    baseline_strategy: str,
+    synthetic_mask: bool,
 ) -> dict[str, float | int | str]:
     df = read_horizontal(path)
-    masked, target = mask_contiguous_zone(df, start_fraction=start_fraction, zone_fraction=zone_fraction)
-    interpolation = fill_tvt_from_input(masked).loc[target.index]
-    prediction = interpolation
-    model = "interpolation"
+    if synthetic_mask:
+        masked, target = mask_contiguous_zone(
+            df,
+            start_fraction=start_fraction,
+            zone_fraction=zone_fraction,
+        )
+    else:
+        if "TVT" not in df.columns or "TVT_input" not in df.columns:
+            raise ValueError("Original evaluation-zone validation requires TVT and TVT_input.")
+        eval_mask = df["TVT_input"].isna()
+        if not bool(eval_mask.any()):
+            raise ValueError(f"No original TVT_input gaps found in {path}")
+        masked = df.copy()
+        target = df.loc[eval_mask, "TVT"].astype(float)
+
+    baseline = fill_tvt(masked, strategy=baseline_strategy).loc[target.index]
+    prediction = baseline
+    model = baseline_strategy
 
     if use_correlation and typewell_path is not None:
         typewell = pd.read_csv(typewell_path)
@@ -46,11 +62,11 @@ def evaluate_well(
             .reindex(target.index)
         )
         prediction = blend_interpolation_and_correlation(
-            interpolation,
+            baseline,
             correlation,
             correlation_weight=correlation_weight,
         )
-        model = "interpolation_typewell_gr_blend"
+        model = f"{baseline_strategy}_typewell_gr_blend"
 
     residual = target.to_numpy(dtype=float) - prediction.to_numpy(dtype=float)
     rmse = float(np.sqrt(np.mean(residual**2)))
@@ -79,6 +95,8 @@ def evaluate_train(
     correlation_step: int,
     candidate_step: int,
     max_wells: int | None,
+    baseline_strategy: str,
+    synthetic_mask: bool,
 ) -> pd.DataFrame:
     wells = discover_wells(Path(data_dir) / "train")
     if max_wells is not None:
@@ -93,20 +111,32 @@ def evaluate_train(
             correlation_weight,
             correlation_step,
             candidate_step,
+            baseline_strategy,
+            synthetic_mask,
         )
         for well in wells
     ]
     return pd.DataFrame(rows).sort_values("rmse", ascending=False).reset_index(drop=True)
 
 
-def write_markdown(results: pd.DataFrame, output_path: Path) -> None:
+def write_markdown(results: pd.DataFrame, output_path: Path, synthetic_mask: bool) -> None:
     total_squared_error = (results["rmse"] ** 2) * results["masked_rows"]
     weighted_rmse = float(np.sqrt(total_squared_error.sum() / results["masked_rows"].sum()))
+
+    if synthetic_mask:
+        validation_description = (
+            "Validation masks a synthetic contiguous interval inside each training well, "
+            "then predicts that interval from inference-available inputs."
+        )
+    else:
+        validation_description = (
+            "Validation uses the original `TVT_input` gaps in each training well as the hidden target zone."
+        )
 
     lines = [
         "# Baseline Validation",
         "",
-        "Validation masks a contiguous interval inside each training well, then predicts that interval from inference-available inputs.",
+        validation_description,
         "",
         f"- Wells evaluated: {len(results)}",
         f"- Masked rows: {int(results['masked_rows'].sum())}",
@@ -142,7 +172,7 @@ def write_markdown(results: pd.DataFrame, output_path: Path) -> None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Validate the interpolation baseline on train wells.")
+    parser = argparse.ArgumentParser(description="Validate TVT baselines on train wells.")
     parser.add_argument("--data-dir", type=Path, default=Path("data/raw"))
     parser.add_argument("--start-fraction", type=float, default=0.65)
     parser.add_argument("--zone-fraction", type=float, default=0.20)
@@ -151,6 +181,8 @@ def main() -> None:
     parser.add_argument("--correlation-step", type=int, default=25)
     parser.add_argument("--candidate-step", type=int, default=5)
     parser.add_argument("--max-wells", type=int, default=None)
+    parser.add_argument("--baseline-strategy", choices=["flat", "interpolation"], default="flat")
+    parser.add_argument("--synthetic-mask", action="store_true")
     parser.add_argument("--csv-output", type=Path, default=Path("work/baseline_validation.csv"))
     parser.add_argument("--markdown-output", type=Path, default=Path("outputs/baseline_validation.md"))
     args = parser.parse_args()
@@ -164,10 +196,12 @@ def main() -> None:
         args.correlation_step,
         args.candidate_step,
         args.max_wells,
+        args.baseline_strategy,
+        args.synthetic_mask,
     )
     args.csv_output.parent.mkdir(parents=True, exist_ok=True)
     results.to_csv(args.csv_output, index=False)
-    write_markdown(results, args.markdown_output)
+    write_markdown(results, args.markdown_output, args.synthetic_mask)
 
     print(f"Wrote {args.csv_output}")
     print(f"Wrote {args.markdown_output}")
