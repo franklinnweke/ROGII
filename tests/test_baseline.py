@@ -3,7 +3,7 @@ import unittest
 import numpy as np
 import pandas as pd
 
-from rogii_geology.baseline import fill_tvt_from_input
+from rogii_geology.baseline import fill_tvt, fill_tvt_flat_from_last_known, fill_tvt_from_input
 from rogii_geology.submission import parse_submission_ids
 from rogii_geology.validation import score_interpolation_baseline
 
@@ -15,6 +15,20 @@ class BaselineTests(unittest.TestCase):
         pred = fill_tvt_from_input(df)
 
         self.assertEqual(pred.tolist(), [100.0, 101.0, 102.0, 103.0, 104.0])
+
+    def test_fill_tvt_flat_carries_last_known_value(self) -> None:
+        df = pd.DataFrame({"TVT_input": [100.0, 101.0, np.nan, np.nan, np.nan]})
+
+        pred = fill_tvt_flat_from_last_known(df)
+
+        self.assertEqual(pred.tolist(), [100.0, 101.0, 101.0, 101.0, 101.0])
+
+    def test_fill_tvt_uses_flat_strategy_by_default(self) -> None:
+        df = pd.DataFrame({"TVT_input": [100.0, 101.0, np.nan]})
+
+        pred = fill_tvt(df)
+
+        self.assertEqual(pred.tolist(), [100.0, 101.0, 101.0])
 
     def test_parse_submission_ids_groups_by_well(self) -> None:
         sample = pd.DataFrame({"id": ["000d7d20_1442", "000d7d20_1443", "abc12345_10"]})
