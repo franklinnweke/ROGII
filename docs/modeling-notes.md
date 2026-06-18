@@ -2,14 +2,17 @@
 
 ## Current Validation Setup
 
-Validation masks a contiguous interval inside each training well and predicts the hidden interval from inference-available inputs. This is closer to the Kaggle rerun setup than random row splits because adjacent rows along a lateral well are strongly autocorrelated.
+Validation should use the original `TVT_input` gaps in each training well. Kaggle's public examples and public notebooks confirm these gaps are contiguous tails, and `sample_submission.csv` row IDs map directly to those hidden rows.
 
-Current default mask:
+Synthetic masks remain useful for robustness checks, but they are secondary.
 
-- Start fraction: `0.65`
-- Zone fraction: `0.20`
+## Baseline Correction
 
-## Baseline Results
+The first implementation used interpolation/extrapolation through the hidden zone. Public Kaggle analysis shows the stronger zero-order baseline is simpler: carry the last known `TVT_input` value through the hidden tail.
+
+That flat-tail baseline is now the default for submission generation.
+
+## Previous Baseline Results
 
 Full-train interpolation baseline:
 
@@ -29,7 +32,7 @@ First 50 wells, interpolation plus typewell gamma-ray correlation blend:
 - Weighted RMSE: 68.0063
 - Median per-well RMSE: 50.6428
 
-Interpretation: the first GR-correlation blend reduces large weighted errors on the sampled wells, but it slightly worsens the median well. That means it should remain an experimental component, not a default replacement for interpolation.
+Interpretation: the first GR-correlation blend reduced large weighted errors under the old synthetic-mask validation, but that validation target was not aligned with the real eval-tail task. It should be retested against original `TVT_input` gaps before being trusted.
 
 ## Important Data Constraint
 
