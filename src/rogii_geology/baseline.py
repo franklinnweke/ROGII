@@ -23,8 +23,29 @@ def fill_tvt_from_input(horizontal_df: pd.DataFrame) -> pd.Series:
     return pd.Series(filled, index=horizontal_df.index, name="tvt")
 
 
+def fill_tvt_flat_from_last_known(horizontal_df: pd.DataFrame) -> pd.Series:
+    """Predict TVT by carrying the last known TVT_input through the evaluation zone."""
+    if "TVT_input" not in horizontal_df.columns:
+        return _fallback_from_z(horizontal_df)
+
+    tvt = pd.to_numeric(horizontal_df["TVT_input"], errors="coerce")
+    if tvt.notna().sum() == 0:
+        return _fallback_from_z(horizontal_df)
+
+    filled = tvt.ffill().bfill()
+    return filled.rename("tvt")
+
+
+def fill_tvt(horizontal_df: pd.DataFrame, strategy: str = "flat") -> pd.Series:
+    if strategy == "flat":
+        return fill_tvt_flat_from_last_known(horizontal_df)
+    if strategy == "interpolation":
+        return fill_tvt_from_input(horizontal_df)
+    raise ValueError(f"Unknown TVT fill strategy: {strategy}")
+
+
 def predict_required_rows(horizontal_df: pd.DataFrame, row_indices: list[int]) -> pd.DataFrame:
-    predictions = fill_tvt_from_input(horizontal_df)
+    predictions = fill_tvt_flat_from_last_known(horizontal_df)
     valid_indices = [idx for idx in row_indices if 0 <= idx < len(horizontal_df)]
     return pd.DataFrame({"row_index": valid_indices, "tvt": predictions.iloc[valid_indices].to_numpy()})
 
