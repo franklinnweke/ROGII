@@ -3,7 +3,12 @@ import unittest
 import numpy as np
 import pandas as pd
 
-from rogii_geology.baseline import fill_tvt, fill_tvt_flat_from_last_known, fill_tvt_from_input
+from rogii_geology.baseline import (
+    fill_tvt,
+    fill_tvt_flat_from_last_known,
+    fill_tvt_from_input,
+    fill_tvt_saturated_ramp,
+)
 from rogii_geology.submission import parse_submission_ids
 from rogii_geology.validation import score_interpolation_baseline
 
@@ -29,6 +34,20 @@ class BaselineTests(unittest.TestCase):
         pred = fill_tvt(df)
 
         self.assertEqual(pred.tolist(), [100.0, 101.0, 101.0])
+
+    def test_saturated_ramp_preserves_known_values_and_damps_recent_slope(self) -> None:
+        df = pd.DataFrame(
+            {
+                "MD": np.arange(6.0),
+                "TVT_input": [100.0, 101.0, 102.0, np.nan, np.nan, np.nan],
+            }
+        )
+
+        pred = fill_tvt_saturated_ramp(df, tau=1.0, center=0.0, scale=1.0)
+
+        self.assertEqual(pred.iloc[:3].tolist(), [100.0, 101.0, 102.0])
+        self.assertGreater(pred.iloc[3], 102.0)
+        self.assertLess(pred.iloc[-1], 103.0)
 
     def test_parse_submission_ids_groups_by_well(self) -> None:
         sample = pd.DataFrame({"id": ["000d7d20_1442", "000d7d20_1443", "abc12345_10"]})
