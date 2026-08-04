@@ -12,6 +12,14 @@ The first implementation used interpolation/extrapolation through the hidden zon
 
 That flat-tail baseline is now the default for submission generation.
 
+The submitted notebook uses a saturated recent-trend ramp rather than the flat baseline. It fits a line to the last 80 known rows, damps the trend with distance, and preserves flat continuity when the required inputs are unavailable.
+
+Current selected result:
+
+- Saturated-ramp weighted RMSE: 15.5281 across 773 wells
+- Flat-tail weighted RMSE: 15.9099 across 773 wells
+- Kaggle public score: 15.660, successful version 1 submission
+
 ## Previous Baseline Results
 
 Full-train interpolation baseline:
