@@ -54,23 +54,22 @@
     <section style="margin-top:22px;background:#ffffff;border:1px solid #d9e0e4;border-radius:8px;padding:26px;">
       <h2 style="margin:0 0 12px;font-size:22px;color:#10202b;">What The Last Push Achieved</h2>
       <p style="margin:0 0 14px;">
-        The latest GitHub update changed the project direction from an interpolation-first baseline to a stronger,
-        competition-aligned <strong>flat-tail baseline</strong>.
+        The latest work moved from an interpolation-first baseline to a competition-aligned
+        <strong>saturated recent-trend ramp</strong>, then submitted it through Kaggle.
       </p>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;">
         <div style="border:1px solid #d9e0e4;border-radius:8px;padding:16px;background:#f9fbfc;">
           <h3 style="margin:0 0 8px;font-size:17px;color:#10202b;">Default Baseline Corrected</h3>
           <p style="margin:0;">
             Prediction now carries the last known <code style="background:#edf2f4;padding:2px 5px;border-radius:4px;">TVT_input</code>
-            value through the hidden tail, instead of extrapolating an increasing/decreasing line.
+            value through the hidden tail with a bounded recent-trend ramp that saturates with distance.
           </p>
         </div>
         <div style="border:1px solid #d9e0e4;border-radius:8px;padding:16px;background:#f9fbfc;">
           <h3 style="margin:0 0 8px;font-size:17px;color:#10202b;">Submission Script Updated</h3>
           <p style="margin:0;">
             <code style="background:#edf2f4;padding:2px 5px;border-radius:4px;">scripts/make_baseline_submission.py</code>
-            now supports <code style="background:#edf2f4;padding:2px 5px;border-radius:4px;">--strategy flat</code>
-            and uses it by default.
+            now supports the flat and saturated-ramp strategies used in local comparison.
           </p>
         </div>
         <div style="border:1px solid #d9e0e4;border-radius:8px;padding:16px;background:#f9fbfc;">
@@ -83,11 +82,24 @@
         <div style="border:1px solid #d9e0e4;border-radius:8px;padding:16px;background:#f9fbfc;">
           <h3 style="margin:0 0 8px;font-size:17px;color:#10202b;">Kaggle Notebook Draft Added</h3>
           <p style="margin:0;">
-            Added <code style="background:#edf2f4;padding:2px 5px;border-radius:4px;">notebooks/rogii_flat_tail_baseline.py</code>,
-            a simple Kaggle-ready script that writes <code style="background:#edf2f4;padding:2px 5px;border-radius:4px;">submission.csv</code>.
+            Added the Kaggle-ready saturated-ramp notebook and a reproducible notebook builder that writes
+            <code style="background:#edf2f4;padding:2px 5px;border-radius:4px;">submission.csv</code>.
           </p>
         </div>
       </div>
+    </section>
+
+    <section style="margin-top:22px;background:#ffffff;border:1px solid #d9e0e4;border-radius:8px;padding:26px;">
+      <h2 style="margin:0 0 12px;font-size:22px;color:#10202b;">Kaggle Submission Result</h2>
+      <p style="margin:0 0 10px;">
+        The first notebook submission succeeded on August 4, 2026. The public score was
+        <strong>15.660</strong>; the corresponding local original-gap validation was
+        <strong>15.5281 weighted RMSE</strong>.
+      </p>
+      <p style="margin:0;">
+        This is a valid baseline and an honest competition checkpoint, not a claim of leaderboard competitiveness.
+        The repository now records the method, validation comparison, submission reference, and next modeling steps.
+      </p>
     </section>
 
     <section style="margin-top:22px;background:#ffffff;border:1px solid #d9e0e4;border-radius:8px;padding:26px;">
@@ -139,7 +151,7 @@
     <section style="margin-top:22px;background:#ffffff;border:1px solid #d9e0e4;border-radius:8px;padding:26px;">
       <h2 style="margin:0 0 12px;font-size:22px;color:#10202b;">Verification Completed</h2>
       <ul style="margin:0;padding-left:22px;">
-        <li>Focused baseline tests passed: <strong>5 tests OK</strong>.</li>
+        <li>Ruff lint passed; the full current test suite still needs a clean rerun because of a local pandas import/mmap issue.</li>
         <li>Generated local submission file had <strong>14,152 lines</strong>, matching Kaggle's sample submission count including header.</li>
         <li>Generated files and raw data remain ignored by Git.</li>
         <li>No unwanted authorship labels were found in the project files scanned before publishing.</li>
@@ -158,8 +170,8 @@
     <section style="margin-top:22px;background:#ffffff;border:1px solid #d9e0e4;border-radius:8px;padding:26px;">
       <h2 style="margin:0 0 12px;font-size:22px;color:#10202b;">Recommended Next Steps</h2>
       <ol style="margin:0;padding-left:22px;">
-        <li style="margin-bottom:10px;">Run the flat-tail notebook on Kaggle and make the first honest submission.</li>
-        <li style="margin-bottom:10px;">Record the public score without overclaiming it as final model performance.</li>
+        <li style="margin-bottom:10px;">Preserve the submitted notebook and checksum as the reproducibility checkpoint.</li>
+        <li style="margin-bottom:10px;">Repair the local test environment and rerun the full validation suite.</li>
         <li style="margin-bottom:10px;">Build a guarded gamma-ray/typewell correlation experiment as the second pipeline.</li>
         <li style="margin-bottom:10px;">Compare the guarded correlation result against the flat-tail baseline.</li>
         <li>Turn the process into portfolio proof: Kaggle notebook, GitHub repo, technical write-up, and LinkedIn summary.</li>
