@@ -7,7 +7,10 @@ import numpy as np
 import pandas as pd
 
 from rogii_geology.baseline import fill_tvt
-from rogii_geology.correlation import blend_interpolation_and_correlation, estimate_tvt_from_typewell_gr
+from rogii_geology.correlation import (
+    blend_interpolation_and_correlation,
+    estimate_tvt_from_typewell_gr,
+)
 from rogii_geology.io import discover_wells, read_horizontal
 from rogii_geology.validation import mask_contiguous_zone
 
@@ -181,7 +184,11 @@ def main() -> None:
     parser.add_argument("--correlation-step", type=int, default=25)
     parser.add_argument("--candidate-step", type=int, default=5)
     parser.add_argument("--max-wells", type=int, default=None)
-    parser.add_argument("--baseline-strategy", choices=["flat", "interpolation"], default="flat")
+    parser.add_argument(
+        "--baseline-strategy",
+        choices=["flat", "interpolation", "saturated_ramp"],
+        default="flat",
+    )
     parser.add_argument("--synthetic-mask", action="store_true")
     parser.add_argument("--csv-output", type=Path, default=Path("work/baseline_validation.csv"))
     parser.add_argument("--markdown-output", type=Path, default=Path("outputs/baseline_validation.md"))
