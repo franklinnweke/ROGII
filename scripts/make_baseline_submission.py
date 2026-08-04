@@ -10,7 +10,11 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Create a simple ROGII baseline submission.")
     parser.add_argument("--data-dir", type=Path, default=Path("data/raw"))
     parser.add_argument("--output", type=Path, default=Path("submissions/submission.csv"))
-    parser.add_argument("--strategy", choices=["flat", "interpolation"], default="flat")
+    parser.add_argument(
+        "--strategy",
+        choices=["flat", "interpolation", "saturated_ramp"],
+        default="flat",
+    )
     args = parser.parse_args()
 
     output_path = write_submission(args.data_dir, args.output, strategy=args.strategy)
