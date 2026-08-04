@@ -4,8 +4,10 @@
 
 1. Accept the competition rules on Kaggle.
 2. Download the competition data locally or attach it to a Kaggle Notebook.
-3. Run the interpolation baseline and submit `submission.csv`.
-4. Record public leaderboard score, private notes, runtime, and notebook version.
+3. Run the offline saturated-ramp notebook and submit it through Kaggle Code.
+4. Record public leaderboard score, private notes, runtime, notebook version, and artifact checksum.
+
+Current result: version 1 succeeded with public score `15.660`. The local method scored `15.5281` weighted RMSE on all 773 training wells under original-gap validation.
 
 ## EDA Checklist
 
@@ -27,11 +29,11 @@ Use validation that respects geology and hidden-test mechanics:
 
 ## Modeling Roadmap
 
-1. Interpolation/extrapolation baseline from `TVT_input`.
-2. Tabular model with trajectory, gamma ray, rolling-window, and formation-surface-distance features.
-3. Typewell-correlation features from local `GR` pattern matching.
-4. Ensemble of smooth baseline plus ML residual model.
-5. Post-processing for continuity and physically plausible local trends.
+1. Flat-tail and saturated-ramp baselines from `TVT_input`.
+2. Typewell-correlation features from local `GR` pattern matching, retained only if they beat the baseline under honest validation.
+3. Spatial/regime-aware features using trajectory, azimuth/dip proxies, neighboring wells, and recent TVT trend.
+4. Guarded selection between continuity and learned corrections.
+5. Portfolio write-up and post-competition reproducibility package.
 
 ## Domain Assumptions To Test
 
