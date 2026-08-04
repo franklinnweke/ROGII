@@ -7,7 +7,6 @@ import pandas as pd
 
 from rogii_geology.io import WellFiles, discover_wells, read_horizontal
 
-
 FORMATION_COLUMNS = ("ANCC", "ASTNU", "ASTNL", "EGFDU", "EGFDL", "BUDA")
 
 
